@@ -19,7 +19,27 @@ document.querySelector('.join__button').addEventListener('click', e => {
     socket.on('user_left', data => {
         displayUserCards(data);
     });
+
+    socket.on('new__message', (fromUser, msg) => {
+        addMessage(fromUser, msg);
+    });
 });
+
+const sendMessage = (userid, username) => {
+    const msg = document.querySelector(`#msg_${userid}`).value;
+    if(!msg && msg.length === 0)
+        return;
+    socket.emit('send__message', userid, msg);
+    document.querySelector(`#msg_${userid}`).value = '';
+    addMessage('You', msg);
+}
+
+const addMessage = (username, msg) => {
+    let pEle = document.createElement('p');
+    const content = `<span class="userchat">${username}</span> : ${msg}`;
+    pEle.innerHTML = content;
+    document.querySelector('.right').appendChild(pEle);
+}
 
 const displayUserCards = (data) => {
     let finalEle = '';
@@ -28,8 +48,8 @@ const displayUserCards = (data) => {
             const ele = `<div class="usercard ${user.username}">
                             <p>${user.username}</p>
                             <div class="inputs">
-                                <input type="text">
-                                <button>Send</button>
+                                <input type="text" id="msg_${user.userid}">
+                                <button onclick="sendMessage('${user.userid}', '${user.username}')">Send</button>
                             </div>
                         </div>`;
             finalEle = finalEle + ele;

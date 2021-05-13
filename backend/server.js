@@ -6,17 +6,32 @@ const options = {
     }
 }
 const io = require('socket.io')(server, options);
-const userList = [];
+let userList = [];
+
+const fetchUserList = () => {
+    const socketsList = io.sockets.sockets;
+    userList = [];
+    socketsList.forEach(socket => {
+        userList.push({userid: socket.id, username: socket.data.username})
+    });
+}
 
 io.on('connection', socket => {
     const username = socket.handshake.query.username;
-    console.log('User connected');
-    userList.push({username: username, userid: socket.id});
-    const data = userList
+    socket.data.username = username;
+    fetchUserList();
+    console.log(`User connected. Total users : ${userList.length}`);
+    const data = userList;
     io.emit('new_user', data);
 
+    socket.on('send__message', (toSockId, msg) => {
+        // console.log(`Message from ${socket.id} to ${toSockId} : ${msg}`);
+        socket.to(toSockId).emit('new__message', socket.data.username, msg);
+    });
+
     socket.on('disconnect', () => {
-        userList.pop();
+        fetchUserList();
+        console.log(`User disconnected. Total users : ${userList.length}`)
         const data = userList;
         io.emit('user_left', data);
     });
