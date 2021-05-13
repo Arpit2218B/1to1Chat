@@ -46,7 +46,7 @@ const displayUserCards = (data) => {
     data.forEach(user => {
         if(!(user.username === username)) {
             const ele = `<div class="usercard ${user.username}">
-                            <p>${user.username}</p>
+                            <p>User: ${user.username}</p>
                             <div class="inputs">
                                 <input type="text" id="msg_${user.userid}">
                                 <button onclick="sendMessage('${user.userid}', '${user.username}')">Send</button>
